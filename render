@@ -1,0 +1,18 @@
+#!/bin/python3
+
+from matplotlib import image, pyplot
+import random
+
+forward = image.imread("graphics/stfst01.png")
+right = image.imread("graphics/stfst00.png")
+left = image.imread("graphics/stfst02.png")
+
+facelist = [forward, right, left]
+
+fig, ax = pyplot.subplots()
+
+imobj = ax.imshow(forward)
+while True:
+    imobj.set_data(random.choice(facelist))
+    fig.canvas.draw_idle()
+    pyplot.pause(1)
