@@ -1,6 +1,6 @@
 #!/bin/python3
 
-from matplotlib import image, pyplot
+from matplotlib import backend_bases, image, pyplot
 import random
 
 forward = image.imread("graphics/stfst01.png")
@@ -10,8 +10,11 @@ left = image.imread("graphics/stfst02.png")
 facelist = [forward, right, left]
 
 fig, ax = pyplot.subplots()
-
 imobj = ax.imshow(forward)
+
+pyplot.axis("off")
+fig.canvas.toolbar.pack_forget()
+
 while True:
     imobj.set_data(random.choice(facelist))
     fig.canvas.draw_idle()
