@@ -1,21 +1,31 @@
 #!/bin/python3
 
-from matplotlib import backend_bases, image, pyplot
+from matplotlib import image, offsetbox, pyplot
 import random
 
-forward = image.imread("graphics/stfst01.png")
-right = image.imread("graphics/stfst00.png")
-left = image.imread("graphics/stfst02.png")
+def getImage(path):
+    return offsetbox.OffsetImage(image.imread(path))
+
+stbar = getImage("graphics/stbar.png")
+forward = getImage("graphics/stfst01.png")
+right = getImage("graphics/stfst00.png")
+left = getImage("graphics/stfst02.png")
 
 facelist = [forward, right, left]
 
-fig, ax = pyplot.subplots()
-imobj = ax.imshow(forward)
+xs = [160, 160]
+ys = [16, 16]
 
-pyplot.axis("off")
+fig, ax = pyplot.subplots()
+
 fig.canvas.toolbar.pack_forget()
 
 while True:
-    imobj.set_data(random.choice(facelist))
-    fig.canvas.draw_idle()
+    pyplot.cla()
+    ax.axis("off")
+    ax.scatter(xs, ys)
+    images = [stbar, random.choice(facelist)]
+    for image, x, y in zip(images, xs, ys):
+        ab = offsetbox.AnnotationBbox(image, (x, y), frameon=False)
+        ax.add_artist(ab)
     pyplot.pause(1)
