@@ -1,11 +1,12 @@
 #!/bin/python3
 
+from math import ceil
 from matplotlib import image, offsetbox, pyplot
-import psutil
-import random
+from psutil import sensors_battery
+from random import randrange
 
 def loadImage(path):
-    return offsetbox.OffsetImage(image.imread(path), zoom=2)
+    return offsetbox.OffsetImage(image.imread(path), zoom=1)
 
 # load in required graphics
 stbar = loadImage("graphics/stbar.png")
@@ -17,7 +18,7 @@ for healthrange in range(5):
     facelist.append(faces)
 
 # get system info
-battery_percent = int(psutil.sensors_battery()[0])
+battery_percent = int(sensors_battery()[0])
 
 # misc
 fig, ax = pyplot.subplots()
@@ -31,7 +32,10 @@ while True:
     ax.axis("off")
 
     # rebuild image list
-    images = [(stbar, 0, 0), (facelist[5 - int(battery_percent / 20)][random.randrange(3)], 0, 0)]
+    images = [
+        (stbar, 0, 0), 
+        (facelist[5 - ceil(battery_percent / 20)][randrange(3)], 0, 0),
+    ]
 
     # add images to plot
     ax.scatter([x for image, x, y in images], [y for image, x, y in images])
