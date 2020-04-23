@@ -1,31 +1,43 @@
 #!/bin/python3
 
 from matplotlib import image, offsetbox, pyplot
+import psutil
 import random
 
-def getImage(path):
-    return offsetbox.OffsetImage(image.imread(path))
+def loadImage(path):
+    return offsetbox.OffsetImage(image.imread(path), zoom=2)
 
-stbar = getImage("graphics/stbar.png")
-forward = getImage("graphics/stfst01.png")
-right = getImage("graphics/stfst00.png")
-left = getImage("graphics/stfst02.png")
+# load in required graphics
+stbar = loadImage("graphics/stbar.png")
+facelist = []
+for healthrange in range(5):
+    faces = []
+    for orientation in range(3):
+        faces.append(loadImage(f"graphics/stfst{healthrange}{orientation}.png"))
+    facelist.append(faces)
 
-facelist = [forward, right, left]
+# get system info
+battery_percent = int(psutil.sensors_battery()[0])
 
-xs = [160, 160]
-ys = [16, 16]
-
+# misc
 fig, ax = pyplot.subplots()
-
 fig.canvas.toolbar.pack_forget()
+fig.canvas.set_window_title("Status Bar")
 
+# run program loop
 while True:
+    # reset plot
     pyplot.cla()
     ax.axis("off")
-    ax.scatter(xs, ys)
-    images = [stbar, random.choice(facelist)]
-    for image, x, y in zip(images, xs, ys):
+
+    # rebuild image list
+    images = [(stbar, 0, 0), (facelist[5 - int(battery_percent / 20)][random.randrange(3)], 0, 0)]
+
+    # add images to plot
+    ax.scatter([x for image, x, y in images], [y for image, x, y in images])
+    for image, x, y in images:
         ab = offsetbox.AnnotationBbox(image, (x, y), frameon=False)
         ax.add_artist(ab)
+
+    # display for a second
     pyplot.pause(1)
