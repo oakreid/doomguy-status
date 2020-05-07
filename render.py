@@ -2,9 +2,10 @@
 
 from math import ceil, floor
 from matplotlib import image, offsetbox, pyplot
-from psutil import sensors_battery
+from psutil import cpu_percent, sensors_battery
 from random import randrange
 
+# constants
 ZOOM = 1
 DPI = 141
 PIXEL_WIDTH = 320
@@ -16,11 +17,17 @@ INCHES_HEIGHT = float(PIXEL_HEIGHT) / DPI * 2
 REDNUM_Y = CENTER_Y - 5
 ONES_BATTERY_X = CENTER_X - 82
 TENS_BATTERY_X = CENTER_X - 94
+HUNDRED_BATTERY_X = CENTER_X - 104
+PERCENT_BATTERY_X = CENTER_X - 69
+ONES_CPU_X = CENTER_X + 48
+TENS_CPU_X = CENTER_X + 36
+HUNDRED_CPU_X = CENTER_X + 26
+PERCENT_CPU_X = CENTER_X + 61
 
+# load in required graphics
 def loadImage(path):
     return offsetbox.OffsetImage(image.imread(path), zoom=ZOOM)
 
-# load in required graphics
 stbar = image.imread("graphics/stbar.png")
 facelist = []
 for healthrange in range(5):
@@ -31,9 +38,6 @@ for healthrange in range(5):
 rednumbers = [loadImage(f"graphics/winum{n}.png") for n in range(10)]
 redpercent = loadImage("graphics/wipcnt.png")
 
-# get relevant system info
-battery_percent = int(sensors_battery()[0])
-
 # formatting
 pyplot.rcParams["figure.dpi"] = DPI
 fig, ax = pyplot.subplots()
@@ -43,20 +47,27 @@ fig.canvas.set_window_title("Status Bar")
 
 # run program loop
 while True:
+
     # reset plot
     pyplot.cla()
     ax.imshow(stbar)
     ax.axis("off")
     fig.set_size_inches(INCHES_WIDTH, INCHES_HEIGHT)
-   
+ 
+    # get relevant system info
+    battery_percent = int(sensors_battery()[0])
+    cpu_usage_percent = int(cpu_percent())
+
     # rebuild image list
     images = [
         (facelist[5 - ceil(battery_percent / 20)][randrange(3)], CENTER_X, CENTER_Y),  # face
-        (redpercent, CENTER_X - 69, REDNUM_Y),  # percentage sign, always in the same place
-    ]
-    if battery_percent == 100: # battery percent "health"
+        (redpercent, PERCENT_BATTERY_X, REDNUM_Y),      # health percentage sign
+        (redpercent, PERCENT_CPU_X, REDNUM_Y),     # cpu usage percentage sign
+    ]  # these are always in the same place
+
+    if battery_percent == 100:  # battery percent "health"
         images += [
-            (rednumbers[1], CENTER_X - 104, REDNUM_Y),
+            (rednumbers[1], HUNDRED_BATTERY_X, REDNUM_Y),
             (rednumbers[0], TENS_BATTERY_X, REDNUM_Y),
             (rednumbers[0], ONES_BATTERY_X, REDNUM_Y),
         ]
@@ -67,6 +78,20 @@ while True:
         ]
     else:
         images.append((rednumbers[battery_percent], ONES_BATTERY_X, REDNUM_Y))
+   
+    if cpu_usage_percent == 100:  # cpu usage percent "armor"
+         images += [
+            (rednumbers[1], HUNDRED_CPU_X, REDNUM_Y),
+            (rednumbers[0], TENS_CPU_X, REDNUM_Y),
+            (rednumbers[0], ONES_CPU_X, REDNUM_Y),
+        ]
+    elif cpu_usage_percent > 9:
+        images += [
+            (rednumbers[floor(cpu_usage_percent / 10)], TENS_CPU_X, REDNUM_Y),
+            (rednumbers[cpu_usage_percent % 10], ONES_CPU_X, REDNUM_Y),
+        ]
+    else:
+        images.append((rednumbers[cpu_usage_percent], ONES_CPU_X, REDNUM_Y))
 
     # add images to plot
     ax.scatter(
@@ -78,6 +103,6 @@ while True:
     for image, x, y in images:
         ab = offsetbox.AnnotationBbox(image, (x, y), frameon=False)
         ax.add_artist(ab)
-    
-    # display for a second
+
+    # refresh once per second
     pyplot.pause(1)
