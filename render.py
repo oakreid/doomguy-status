@@ -35,8 +35,10 @@ for healthrange in range(5):
     for orientation in range(3):
         faces.append(loadImage(f"graphics/stfst{healthrange}{orientation}.png"))
     facelist.append(faces)
+faceouch = loadImage("graphics/stfouch0.png")
 rednumbers = [loadImage(f"graphics/winum{n}.png") for n in range(10)]
 redpercent = loadImage("graphics/wipcnt.png")
+redminus = loadImage("graphics/sttminus.png")
 
 # formatting
 pyplot.rcParams["figure.dpi"] = DPI
@@ -55,29 +57,37 @@ while True:
     fig.set_size_inches(INCHES_WIDTH, INCHES_HEIGHT)
  
     # get relevant system info
-    battery_percent = int(sensors_battery()[0])
+    battery_percent = sensors_battery()
     cpu_usage_percent = int(cpu_percent())
 
     # rebuild image list
     images = [
-        (facelist[5 - ceil(battery_percent / 20)][randrange(3)], CENTER_X, CENTER_Y),  # face
         (redpercent, PERCENT_BATTERY_X, REDNUM_Y),      # health percentage sign
         (redpercent, PERCENT_CPU_X, REDNUM_Y),     # cpu usage percentage sign
     ]  # these are always in the same place
 
-    if battery_percent == 100:  # battery percent "health"
-        images += [
-            (rednumbers[1], HUNDRED_BATTERY_X, REDNUM_Y),
-            (rednumbers[0], TENS_BATTERY_X, REDNUM_Y),
-            (rednumbers[0], ONES_BATTERY_X, REDNUM_Y),
-        ]
-    elif battery_percent > 9:
-        images += [
-            (rednumbers[floor(battery_percent / 10)], TENS_BATTERY_X, REDNUM_Y),
-            (rednumbers[battery_percent % 10], ONES_BATTERY_X, REDNUM_Y),
-        ]
+    if battery_percent:
+        battery_percent = int(battery_percent[0])
+        images.append((facelist[5 - ceil(battery_percent / 20)][randrange(3)], CENTER_X, CENTER_Y))  # face
+        if battery_percent == 100:  # battery percent "health"
+            images += [
+                (rednumbers[1], HUNDRED_BATTERY_X, REDNUM_Y),
+                (rednumbers[0], TENS_BATTERY_X, REDNUM_Y),
+                (rednumbers[0], ONES_BATTERY_X, REDNUM_Y),
+            ]
+        elif battery_percent > 9:
+            images += [
+                (rednumbers[floor(battery_percent / 10)], TENS_BATTERY_X, REDNUM_Y),
+                (rednumbers[battery_percent % 10], ONES_BATTERY_X, REDNUM_Y),
+            ]
+        else:
+            images.append((rednumbers[battery_percent], ONES_BATTERY_X, REDNUM_Y))
     else:
-        images.append((rednumbers[battery_percent], ONES_BATTERY_X, REDNUM_Y))
+        images += [
+            (faceouch, CENTER_X, CENTER_Y),
+            (redminus, TENS_BATTERY_X, REDNUM_Y),
+            (redminus, ONES_BATTERY_X, REDNUM_Y),
+        ]
    
     if cpu_usage_percent == 100:  # cpu usage percent "armor"
          images += [
