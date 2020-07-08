@@ -74,9 +74,10 @@ while True:
 
     if battery_data:
         battery_percent = int(battery_data.percent)
-        battery_minsleft = int(battery_data.secsleft / 60)
+        battery_minsleft = min(int(battery_data.secsleft / 60), 999)
         images.append((facelist[5 - ceil(battery_percent / 20)][randrange(3)], CENTER_X, CENTER_Y))  # face
 
+        # battery percent remaining "health"
         if battery_percent == 100:  # battery percent "health"
             images += [
                 (rednumbers[1], HUNDRED_BATTERY_X, REDNUM_Y),
@@ -91,26 +92,27 @@ while True:
         else:
             images.append((rednumbers[battery_percent], ONES_BATTERY_X, REDNUM_Y))
 
-        if battery_minsleft > 999:  # time left on charge "ammo" (minutes)
-            images += [
-                (rednumbers[9], HUNDREDS_TIMELEFT_X, REDNUM_Y),
-                (rednumbers[9], TENS_TIMELEFT_X, REDNUM_Y),
-                (rednumbers[9], ONES_TIMELEFT_X, REDNUM_Y),
-            ]
-        elif battery_minsleft >= 100:
+        # time (minutes) left on battery charge "ammo"
+        if battery_minsleft >= 100:
             images += [
                 (rednumbers[floor(battery_minsleft / 100)], HUNDREDS_TIMELEFT_X, REDNUM_Y),
-                (rednumbers[floor(battery_minsleft / 10)], TENS_TIMELEFT_X, REDNUM_Y),
+                (rednumbers[floor(battery_minsleft % 100 / 10)], TENS_TIMELEFT_X, REDNUM_Y),
                 (rednumbers[battery_minsleft % 10], ONES_TIMELEFT_X, REDNUM_Y),
             ]
-        elif battery_percent > 9:
+        elif battery_minsleft >= 10:
             images += [
                 (rednumbers[floor(battery_minsleft / 10)], TENS_TIMELEFT_X, REDNUM_Y),
                 (rednumbers[battery_minsleft % 10], ONES_TIMELEFT_X, REDNUM_Y),
+            ]
+        elif battery_minsleft <= 0:  # usually indicates the device is charging
+            images += [
+                (redminus, HUNDREDS_TIMELEFT_X, REDNUM_Y),
+                (redminus, TENS_TIMELEFT_X, REDNUM_Y),
+                (redminus, ONES_TIMELEFT_X, REDNUM_Y),
             ]
         else:
             images.append((rednumbers[battery_minsleft], ONES_TIMELEFT_X, REDNUM_Y))
-    else:
+    else:  # usually indicates the device was just plugged into or unplugged from a power source
         images += [
             (faceouch, CENTER_X, CENTER_Y),
             (redminus, TENS_BATTERY_X, REDNUM_Y),
