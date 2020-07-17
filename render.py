@@ -1,5 +1,7 @@
 # use python 3.6+
 
+from os import environ
+
 from math import ceil, floor
 from matplotlib import image, offsetbox, pyplot
 from psutil import cpu_percent, sensors_battery
@@ -27,23 +29,27 @@ PERCENT_CPU_X = CENTER_X + 61
 HUNDREDS_TIMELEFT_X = CENTER_X - 150
 TENS_TIMELEFT_X = CENTER_X - 138
 ONES_TIMELEFT_X = CENTER_X - 126
+try:
+    DOOM_DIR = environ["DOOM_DIR"]
+except KeyError:
+    DOOM_DIR = "."
 
 # load in required graphics
 def loadImage(path):
     return offsetbox.OffsetImage(image.imread(path), zoom=ZOOM)
 
-stbar = image.imread("graphics/stbar.png")
+stbar = image.imread(f"{DOOM_DIR}/graphics/stbar.png")
 facelist = []
 for healthrange in range(5):
     faces = []
     for orientation in range(3):
-        faces.append(loadImage(f"graphics/stfst{healthrange}{orientation}.png"))
+        faces.append(loadImage(f"{DOOM_DIR}/graphics/stfst{healthrange}{orientation}.png"))
     facelist.append(faces)
-faceouch = loadImage("graphics/stfouch0.png")
-rednumbers = [loadImage(f"graphics/winum{n}.png") for n in range(10)]
-redpercent = loadImage("graphics/wipcnt.png")
-redminus = loadImage("graphics/sttminus.png")
-armstab = loadImage("graphics/starms.png")
+faceouch = loadImage(f"{DOOM_DIR}/graphics/stfouch0.png")
+rednumbers = [loadImage(f"{DOOM_DIR}/graphics/winum{n}.png") for n in range(10)]
+redpercent = loadImage(f"{DOOM_DIR}/graphics/wipcnt.png")
+redminus = loadImage(f"{DOOM_DIR}/graphics/sttminus.png")
+armstab = loadImage(f"{DOOM_DIR}/graphics/starms.png")
 
 # formatting
 pyplot.rcParams["figure.dpi"] = DPI
