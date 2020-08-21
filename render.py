@@ -1,11 +1,11 @@
 # use python 3.6+
 
-from os import environ
-
 from math import ceil, floor
+from os import environ
+from random import randrange
+
 from matplotlib import image, offsetbox, pyplot
 from psutil import cpu_percent, sensors_battery
-from random import randrange
 
 # constants
 ZOOM = 1
@@ -18,6 +18,11 @@ INCHES_WIDTH = float(PIXEL_WIDTH) / DPI * 2
 INCHES_HEIGHT = float(PIXEL_HEIGHT) / DPI * 2
 REDNUM_Y = CENTER_Y - 5
 ARMSTAB_X = CENTER_X - 37
+ARMSNUMS_ROW1_Y = CENTER_Y - 9
+ARMSNUMS_ROW2_Y = CENTER_Y + 1
+ARMSNUMS_COL1_X = CENTER_X - 47
+ARMSNUMS_COL2_X = CENTER_X - 35
+ARMSNUMS_COL3_X = CENTER_X - 23
 ONES_BATTERY_X = CENTER_X - 82
 TENS_BATTERY_X = CENTER_X - 94
 HUNDRED_BATTERY_X = CENTER_X - 104
@@ -35,21 +40,21 @@ except KeyError:
     DOOM_DIR = "."
 
 # load in required graphics
-def loadImage(path):
-    return offsetbox.OffsetImage(image.imread(path), zoom=ZOOM)
+def load_image(path: str):
+    return offsetbox.OffsetImage(image.imread(f"{DOOM_DIR}/graphics/{path}"), zoom=ZOOM)
 
 stbar = image.imread(f"{DOOM_DIR}/graphics/stbar.png")
-facelist = []
-for healthrange in range(5):
-    faces = []
-    for orientation in range(3):
-        faces.append(loadImage(f"{DOOM_DIR}/graphics/stfst{healthrange}{orientation}.png"))
-    facelist.append(faces)
-faceouch = loadImage(f"{DOOM_DIR}/graphics/stfouch0.png")
-rednumbers = [loadImage(f"{DOOM_DIR}/graphics/winum{n}.png") for n in range(10)]
-redpercent = loadImage(f"{DOOM_DIR}/graphics/wipcnt.png")
-redminus = loadImage(f"{DOOM_DIR}/graphics/sttminus.png")
-armstab = loadImage(f"{DOOM_DIR}/graphics/starms.png")
+facelist = [[load_image(f"stfst{healthrange}{orientation}.png") for orientation in range(3)] for healthrange in range(5)]
+faceouch = load_image("stfouch1.png")
+rednumbers = [load_image(f"winum{n}.png") for n in range(10)]
+redpercent = load_image("wipcnt.png")
+redminus = load_image("sttminus.png")
+armstab = load_image("starms.png")
+armsnums_yellow = {n: load_image(f"stysnum{n}.png") for n in range(1, 7)}
+armsnums_grey = {n: load_image(f"stgnum{n}.png") for n in range(1, 7)}
+def get_armsnum(num: int):
+    return armsnums_yellow[num]
+
 
 # formatting
 pyplot.rcParams["figure.dpi"] = DPI
@@ -67,15 +72,21 @@ while True:
     ax.axis("off")
     fig.set_size_inches(INCHES_WIDTH, INCHES_HEIGHT)
  
-    # get relevant system info
+    # get relevant system info0
     battery_data = sensors_battery()
     cpu_usage_percent = int(cpu_percent())
 
     # rebuild image list
     images = [
         (redpercent, PERCENT_BATTERY_X, REDNUM_Y),  # health percentage sign
-        (redpercent, PERCENT_CPU_X, REDNUM_Y),  # cpu usage percentage sign
-        (armstab, ARMSTAB_X, CENTER_Y)
+        (redpercent, PERCENT_CPU_X, REDNUM_Y),      # cpu usage percentage sign
+        (armstab, ARMSTAB_X, CENTER_Y),
+        (get_armsnum(1), ARMSNUMS_COL1_X, ARMSNUMS_ROW1_Y),
+        (get_armsnum(2), ARMSNUMS_COL2_X, ARMSNUMS_ROW1_Y),
+        (get_armsnum(3), ARMSNUMS_COL3_X, ARMSNUMS_ROW1_Y),
+        (get_armsnum(4), ARMSNUMS_COL1_X, ARMSNUMS_ROW2_Y),
+        (get_armsnum(5), ARMSNUMS_COL2_X, ARMSNUMS_ROW2_Y),
+        (get_armsnum(6), ARMSNUMS_COL3_X, ARMSNUMS_ROW2_Y),
     ]  # these are always in the same place
 
     if battery_data:
@@ -84,7 +95,7 @@ while True:
         images.append((facelist[5 - ceil(battery_percent / 20)][randrange(3)], CENTER_X, CENTER_Y))  # face
 
         # battery percent remaining "health"
-        if battery_percent == 100:  # battery percent "health"
+        if battery_percent == 100:
             images += [
                 (rednumbers[1], HUNDRED_BATTERY_X, REDNUM_Y),
                 (rednumbers[0], TENS_BATTERY_X, REDNUM_Y),
@@ -128,7 +139,8 @@ while True:
             (redminus, ONES_TIMELEFT_X, REDNUM_Y),
         ]
    
-    if cpu_usage_percent == 100:  # cpu usage percent "armor"
+    # cpu usage percent "armor"
+    if cpu_usage_percent == 100:
          images += [
             (rednumbers[1], HUNDRED_CPU_X, REDNUM_Y),
             (rednumbers[0], TENS_CPU_X, REDNUM_Y),
