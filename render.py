@@ -1,11 +1,11 @@
-# use python 3.6+
-
 from math import ceil, floor
 from os import environ
 from random import randrange
+from re import search
 
 from matplotlib import image, offsetbox, pyplot
 from psutil import cpu_percent, net_if_stats, sensors_battery
+
 
 # constants
 ZOOM = 1
@@ -43,10 +43,26 @@ try:
 except KeyError:
     DOOM_DIR = "."
 
-# load in required graphics
+# helper functions
+def get_armsnum(num: int):
+    return armsnums_yellow[num]
+
+try:
+    from plumbum.cmd import iw
+    def get_mcs(device: str):
+        try:
+            return int(search(r"rx.*MCS (\d+) .*", iw[device]["link"]())[1])
+        except:
+            return -1
+except ImportError:
+    def get_mcs(device: str):
+        return 666
+
 def load_image(path: str):
     return offsetbox.OffsetImage(image.imread(f"{DOOM_DIR}/graphics/{path}"), zoom=ZOOM)
 
+
+# load in required graphics
 stbar = image.imread(f"{DOOM_DIR}/graphics/stbar.png")
 facelist = [[load_image(f"stfst{healthrange}{orientation}.png") for orientation in range(3)] for healthrange in range(5)]
 faceouch = load_image("stfouch1.png")
@@ -56,8 +72,6 @@ redminus = load_image("sttminus.png")
 armstab = load_image("starms.png")
 armsnums_yellow = {n: load_image(f"stysnum{n}.png") for n in range(1, 7)}
 armsnums_grey = {n: load_image(f"stgnum{n}.png") for n in range(1, 7)}
-def get_armsnum(num: int):
-    return armsnums_yellow[num]
 keyimgs = [load_image(f"stkeys{n}.png") for n in range(6)]
 
 # formatting
@@ -173,8 +187,13 @@ def main():
             if eth_if_stats.speed >= 10:
                 images.append((keyimgs[2], KEY_X, BOT_KEY_Y))
         elif wireless_if_name:  # wireless interface exists and is up
-            pass
-
+            rx_mcs = get_mcs(wireless_if_name)
+            if rx_mcs >= 8:
+                images.append((keyimgs[3], KEY_X, TOP_KEY_Y))
+            if rx_mcs >= 3:
+                images.append((keyimgs[4], KEY_X, MID_KEY_Y))
+            if rx_mcs >= 0:
+                images.append((keyimgs[5], KEY_X, BOT_KEY_Y))
 
         # add images to plot
         ax.scatter(
