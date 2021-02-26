@@ -35,9 +35,9 @@ HUNDREDS_TIMELEFT_X = CENTER_X - 150
 TENS_TIMELEFT_X = CENTER_X - 138
 ONES_TIMELEFT_X = CENTER_X - 126
 KEY_X = CENTER_X + 82
-TOP_KEY_Y = CENTER_Y - 10
-MID_KEY_Y = CENTER_Y
-BOT_KEY_Y = CENTER_Y + 10
+BLUE_KEY_Y = CENTER_Y - 10
+YELLOW_KEY_Y = CENTER_Y
+RED_KEY_Y = CENTER_Y + 10
 try:
     DOOM_DIR = environ["DOOM_DIR"]
 except KeyError:
@@ -92,7 +92,7 @@ def main():
         ax.axis("off")
         fig.set_size_inches(INCHES_WIDTH, INCHES_HEIGHT)
      
-        # get relevant system info0
+        # get relevant system info
         battery_data = sensors_battery()
         cpu_usage_percent = int(cpu_percent())
         net_if_info = net_if_stats()
@@ -125,7 +125,7 @@ def main():
                     (rednumbers[0], TENS_BATTERY_X, REDNUM_Y),
                     (rednumbers[0], ONES_BATTERY_X, REDNUM_Y),
                 ]
-            elif battery_percent > 9:
+            elif battery_percent >= 10:
                 images += [
                     (rednumbers[floor(battery_percent / 10)], TENS_BATTERY_X, REDNUM_Y),
                     (rednumbers[battery_percent % 10], ONES_BATTERY_X, REDNUM_Y),
@@ -170,7 +170,7 @@ def main():
                 (rednumbers[0], TENS_CPU_X, REDNUM_Y),
                 (rednumbers[0], ONES_CPU_X, REDNUM_Y),
             ]
-        elif cpu_usage_percent > 9:
+        elif cpu_usage_percent >= 10:
             images += [
                 (rednumbers[floor(cpu_usage_percent / 10)], TENS_CPU_X, REDNUM_Y),
                 (rednumbers[cpu_usage_percent % 10], ONES_CPU_X, REDNUM_Y),
@@ -178,22 +178,22 @@ def main():
         else:
             images.append((rednumbers[cpu_usage_percent], ONES_CPU_X, REDNUM_Y))
 
-        # network connection status (keys)
+        # network connection status "keys"
         if eth_if_stats:  # ethernet interface exists and is up
             if eth_if_stats.speed >= 1000:
-                images.append((keyimgs[0], KEY_X, TOP_KEY_Y))
+                images.append((keyimgs[0], KEY_X, BLUE_KEY_Y))
             if eth_if_stats.speed >= 100:
-                images.append((keyimgs[1], KEY_X, MID_KEY_Y))
+                images.append((keyimgs[1], KEY_X, YELLOW_KEY_Y))
             if eth_if_stats.speed >= 10:
-                images.append((keyimgs[2], KEY_X, BOT_KEY_Y))
+                images.append((keyimgs[2], KEY_X, RED_KEY_Y))
         elif wireless_if_name:  # wireless interface exists and is up
             rx_mcs = get_mcs(wireless_if_name)
             if rx_mcs >= 8:
-                images.append((keyimgs[3], KEY_X, TOP_KEY_Y))
+                images.append((keyimgs[3], KEY_X, BLUE_KEY_Y))
             if rx_mcs >= 3:
-                images.append((keyimgs[4], KEY_X, MID_KEY_Y))
+                images.append((keyimgs[4], KEY_X, YELLOW_KEY_Y))
             if rx_mcs >= 0:
-                images.append((keyimgs[5], KEY_X, BOT_KEY_Y))
+                images.append((keyimgs[5], KEY_X, RED_KEY_Y))
 
         # add images to plot
         ax.scatter(
