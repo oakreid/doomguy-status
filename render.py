@@ -44,8 +44,14 @@ except KeyError:
     DOOM_DIR = "."
 
 # helper functions
-def get_armsnum(num: int):
-    return armsnums_yellow[num]
+try:
+    from i3ipc import Connection
+    i3 = Connection()
+    def get_focused_workspace():
+        return i3.get_tree().find_focused().workspace().num
+except ImportError:
+    def get_focused_workspace():
+        return 1
 
 try:
     from plumbum.cmd import iw
@@ -57,6 +63,10 @@ try:
 except ImportError:
     def get_mcs(device: str):
         return 666
+
+def get_armsnum(num: int, focused_workspace: int):
+    return armsnums_yellow[num] if num == focused_workspace else armsnums_grey[num]
+
 
 def load_image(path: str):
     return offsetbox.OffsetImage(image.imread(f"{DOOM_DIR}/graphics/{path}"), zoom=ZOOM)
@@ -98,19 +108,19 @@ def main():
         net_if_info = net_if_stats()
         eth_if_stats = next((stats for interface, stats in net_if_info.items() if interface.startswith("e") and stats.isup), None)
         wireless_if_name = next((interface for interface, stats in net_if_info.items() if interface.startswith("w") and stats.isup), None)
-
+        focused_workspace = get_focused_workspace()
 
         # rebuild image list
         images = [
             (redpercent, PERCENT_BATTERY_X, REDNUM_Y),  # health percentage sign
             (redpercent, PERCENT_CPU_X, REDNUM_Y),      # cpu usage percentage sign
             (armstab, ARMSTAB_X, CENTER_Y),
-            (get_armsnum(1), ARMSNUMS_COL1_X, ARMSNUMS_ROW1_Y),
-            (get_armsnum(2), ARMSNUMS_COL2_X, ARMSNUMS_ROW1_Y),
-            (get_armsnum(3), ARMSNUMS_COL3_X, ARMSNUMS_ROW1_Y),
-            (get_armsnum(4), ARMSNUMS_COL1_X, ARMSNUMS_ROW2_Y),
-            (get_armsnum(5), ARMSNUMS_COL2_X, ARMSNUMS_ROW2_Y),
-            (get_armsnum(6), ARMSNUMS_COL3_X, ARMSNUMS_ROW2_Y),
+            (get_armsnum(1, focused_workspace), ARMSNUMS_COL1_X, ARMSNUMS_ROW1_Y),
+            (get_armsnum(2, focused_workspace), ARMSNUMS_COL2_X, ARMSNUMS_ROW1_Y),
+            (get_armsnum(3, focused_workspace), ARMSNUMS_COL3_X, ARMSNUMS_ROW1_Y),
+            (get_armsnum(4, focused_workspace), ARMSNUMS_COL1_X, ARMSNUMS_ROW2_Y),
+            (get_armsnum(5, focused_workspace), ARMSNUMS_COL2_X, ARMSNUMS_ROW2_Y),
+            (get_armsnum(6, focused_workspace), ARMSNUMS_COL3_X, ARMSNUMS_ROW2_Y),
         ]  # these are always in the same place
 
         if battery_data:
