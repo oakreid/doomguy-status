@@ -1,4 +1,4 @@
-from i3ipc import Connection
+from i3ipc import Connection, Event
 
 i3 = Connection()
 
@@ -10,6 +10,8 @@ def float_status(i3, e):
         status_bar[0].command("sticky enable")
         status_bar[0].command("border pixel 0")
 
-i3.on('window::new', float_status)
+i3.on(Event.WINDOW_FOCUS, float_status)
+i3.on(Event.WORKSPACE_MOVE, float_status)
 
-i3.main()
+if __name__ == "__main__":
+    i3.main()
