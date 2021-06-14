@@ -25,17 +25,17 @@ ARMSNUMS_ROW2_Y = CENTER_Y + 1
 ARMSNUMS_COL1_X = CENTER_X - 47
 ARMSNUMS_COL2_X = CENTER_X - 35
 ARMSNUMS_COL3_X = CENTER_X - 23
-ONES_BATTERY_X = CENTER_X - 82
-TENS_BATTERY_X = CENTER_X - 94
-HUNDRED_BATTERY_X = CENTER_X - 104
-PERCENT_BATTERY_X = CENTER_X - 69
-ONES_CPU_X = CENTER_X + 48
-TENS_CPU_X = CENTER_X + 36
-HUNDRED_CPU_X = CENTER_X + 26
-PERCENT_CPU_X = CENTER_X + 61
-HUNDREDS_TIMELEFT_X = CENTER_X - 150
-TENS_TIMELEFT_X = CENTER_X - 138
-ONES_TIMELEFT_X = CENTER_X - 126
+ONES_HEALTH_X = CENTER_X - 82
+TENS_HEALTH_X = CENTER_X - 94
+HUNDREDS_HEALTH_X = CENTER_X - 104
+PERCENT_HEALTH_X = CENTER_X - 69
+ONES_ARMOR_X = CENTER_X + 48
+TENS_ARMOR_X = CENTER_X + 36
+HUNDREDS_ARMOR_X = CENTER_X + 26
+PERCENT_ARMOR_X = CENTER_X + 61
+HUNDREDS_AMMO_X = CENTER_X - 150
+TENS_AMMO_X = CENTER_X - 138
+ONES_AMMO_X = CENTER_X - 126
 KEY_X = CENTER_X + 82
 BLUE_KEY_Y = CENTER_Y - 10
 YELLOW_KEY_Y = CENTER_Y
@@ -123,8 +123,8 @@ def main():
 
         # rebuild image list
         images = [
-            (redpercent, PERCENT_BATTERY_X, REDNUM_Y),  # health percentage sign
-            (redpercent, PERCENT_CPU_X, REDNUM_Y),      # cpu usage percentage sign
+            (redpercent, PERCENT_HEALTH_X, REDNUM_Y),   # health percentage sign
+            (redpercent, PERCENT_ARMOR_X, REDNUM_Y),    # cpu usage percentage sign
             (armstab, ARMSTAB_X, CENTER_Y),
             (get_armsnum(1, focused_workspace), ARMSNUMS_COL1_X, ARMSNUMS_ROW1_Y),
             (get_armsnum(2, focused_workspace), ARMSNUMS_COL2_X, ARMSNUMS_ROW1_Y),
@@ -139,67 +139,51 @@ def main():
             battery_minsleft = min(int(battery_data.secsleft / 60), 999)
             images.append((facelist[5 - ceil(battery_percent / 20)][randrange(3)], CENTER_X, CENTER_Y))  # face
 
-            # battery percent remaining "health"
+            # battery percent remaining "HEALTH"
             if battery_percent == 100:
-                images += [
-                    (rednumbers[1], HUNDRED_BATTERY_X, REDNUM_Y),
-                    (rednumbers[0], TENS_BATTERY_X, REDNUM_Y),
-                    (rednumbers[0], ONES_BATTERY_X, REDNUM_Y),
-                ]
-            elif battery_percent >= 10:
-                images += [
-                    (rednumbers[floor(battery_percent / 10)], TENS_BATTERY_X, REDNUM_Y),
-                    (rednumbers[battery_percent % 10], ONES_BATTERY_X, REDNUM_Y),
-                ]
-            else:
-                images.append((rednumbers[battery_percent], ONES_BATTERY_X, REDNUM_Y))
+                images.append((rednumbers[1], HUNDREDS_HEALTH_X, REDNUM_Y))
+            if battery_percent >= 10:
+                images.append((rednumbers[floor(battery_percent / 10)], TENS_HEALTH_X, REDNUM_Y))
+            images.append((rednumbers[battery_percent % 10], ONES_HEALTH_X, REDNUM_Y))
 
-            # time (minutes) left on battery charge "ammo"
+            # time in minutes left on battery charge "AMMO"
             if battery_minsleft >= 100:
                 images += [
-                    (rednumbers[floor(battery_minsleft / 100)], HUNDREDS_TIMELEFT_X, REDNUM_Y),
-                    (rednumbers[floor(battery_minsleft % 100 / 10)], TENS_TIMELEFT_X, REDNUM_Y),
-                    (rednumbers[battery_minsleft % 10], ONES_TIMELEFT_X, REDNUM_Y),
+                    (rednumbers[floor(battery_minsleft / 100)], HUNDREDS_AMMO_X, REDNUM_Y),
+                    (rednumbers[floor(battery_minsleft % 100 / 10)], TENS_AMMO_X, REDNUM_Y),
+                    (rednumbers[battery_minsleft % 10], ONES_AMMO_X, REDNUM_Y),
                 ]
             elif battery_minsleft >= 10:
                 images += [
-                    (rednumbers[floor(battery_minsleft / 10)], TENS_TIMELEFT_X, REDNUM_Y),
-                    (rednumbers[battery_minsleft % 10], ONES_TIMELEFT_X, REDNUM_Y),
+                    (rednumbers[floor(battery_minsleft / 10)], TENS_AMMO_X, REDNUM_Y),
+                    (rednumbers[battery_minsleft % 10], ONES_AMMO_X, REDNUM_Y),
                 ]
             elif battery_minsleft <= 0:  # usually indicates the device is charging
                 images += [
-                    (redminus, HUNDREDS_TIMELEFT_X, REDNUM_Y),
-                    (redminus, TENS_TIMELEFT_X, REDNUM_Y),
-                    (redminus, ONES_TIMELEFT_X, REDNUM_Y),
+                    (redminus, HUNDREDS_AMMO_X, REDNUM_Y),
+                    (redminus, TENS_AMMO_X, REDNUM_Y),
+                    (redminus, ONES_AMMO_X, REDNUM_Y),
                 ]
             else:
-                images.append((rednumbers[battery_minsleft], ONES_TIMELEFT_X, REDNUM_Y))
+                images.append((rednumbers[battery_minsleft], ONES_AMMO_X, REDNUM_Y))
         else:  # usually indicates the device was just plugged into or unplugged from a power source
             images += [
                 (faceouch, CENTER_X, CENTER_Y),
-                (redminus, TENS_BATTERY_X, REDNUM_Y),
-                (redminus, ONES_BATTERY_X, REDNUM_Y),
-                (redminus, HUNDREDS_TIMELEFT_X, REDNUM_Y),
-                (redminus, TENS_TIMELEFT_X, REDNUM_Y),
-                (redminus, ONES_TIMELEFT_X, REDNUM_Y),
+                (redminus, TENS_HEALTH_X, REDNUM_Y),
+                (redminus, ONES_HEALTH_X, REDNUM_Y),
+                (redminus, HUNDREDS_AMMO_X, REDNUM_Y),
+                (redminus, TENS_AMMO_X, REDNUM_Y),
+                (redminus, ONES_AMMO_X, REDNUM_Y),
             ]
        
-        # cpu usage percent "armor"
+        # cpu usage percent "ARMOR"
         if cpu_usage_percent == 100:
-            images += [
-                (rednumbers[1], HUNDRED_CPU_X, REDNUM_Y),
-                (rednumbers[0], TENS_CPU_X, REDNUM_Y),
-                (rednumbers[0], ONES_CPU_X, REDNUM_Y),
-            ]
-        elif cpu_usage_percent >= 10:
-            images += [
-                (rednumbers[floor(cpu_usage_percent / 10)], TENS_CPU_X, REDNUM_Y),
-                (rednumbers[cpu_usage_percent % 10], ONES_CPU_X, REDNUM_Y),
-            ]
-        else:
-            images.append((rednumbers[cpu_usage_percent], ONES_CPU_X, REDNUM_Y))
+            images.append((rednumbers[1], HUNDREDS_ARMOR_X, REDNUM_Y))
+        if cpu_usage_percent >= 10:
+            images.append((rednumbers[floor(cpu_usage_percent / 10)], TENS_ARMOR_X, REDNUM_Y))
+        images.append((rednumbers[cpu_usage_percent % 10], ONES_ARMOR_X, REDNUM_Y))
 
-        # network connection status "keys"
+        # network connection status "KEYS"
         if eth_if_stats:  # ethernet interface exists and is up
             if eth_if_stats.speed >= 1000:
                 images.append((keyimgs[0], KEY_X, BLUE_KEY_Y))
@@ -250,15 +234,10 @@ def main():
         ]
 
         # add images to plot
-        ax.scatter(
-            [x for image, x, y in images],
-            [y for image, x, y in images],
-            facecolors='none',
-            edgecolors='none',
-        )
+        img_x_y = list(zip(*images))
+        ax.scatter(img_x_y[1], img_x_y[2], facecolors='none', edgecolors='none')
         for image, x, y in images:
-            ab = offsetbox.AnnotationBbox(image, (x, y), frameon=False)
-            ax.add_artist(ab)
+            ax.add_artist(offsetbox.AnnotationBbox(image, (x, y), frameon=False))
 
         # refresh once per second
         pyplot.pause(1)
