@@ -1,3 +1,5 @@
+from calendar import monthrange
+from datetime import datetime
 from math import ceil, floor
 from os import environ
 from random import randrange
@@ -38,6 +40,14 @@ KEY_X = CENTER_X + 82
 BLUE_KEY_Y = CENTER_Y - 10
 YELLOW_KEY_Y = CENTER_Y
 RED_KEY_Y = CENTER_Y + 10
+BULL_Y = CENTER_Y - 9
+SHEL_Y = CENTER_Y - 3
+RCKT_Y = CENTER_Y + 3
+CELL_Y = CENTER_Y + 9
+BSRC_TENS_X = CENTER_X + 121
+BSRC_ONES_X = CENTER_X + 125
+BSRC_TENTHS_X = CENTER_X + 143
+BSRC_HUNDREDTHS_X = CENTER_X + 147
 try:
     DOOM_DIR = environ["DOOM_DIR"]
 except KeyError:
@@ -65,7 +75,7 @@ except ImportError:
         return 666
 
 def get_armsnum(num: int, focused_workspace: int):
-    return armsnums_yellow[num] if num == focused_workspace else armsnums_grey[num]
+    return smallnums_yellow[num] if num == focused_workspace else smallnums_grey[num]
 
 
 def load_image(path: str):
@@ -80,8 +90,8 @@ rednumbers = [load_image(f"winum{n}.png") for n in range(10)]
 redpercent = load_image("wipcnt.png")
 redminus = load_image("sttminus.png")
 armstab = load_image("starms.png")
-armsnums_yellow = {n: load_image(f"stysnum{n}.png") for n in range(1, 7)}
-armsnums_grey = {n: load_image(f"stgnum{n}.png") for n in range(1, 7)}
+smallnums_yellow = [load_image(f"stysnum{n}.png") for n in range(10)]
+smallnums_grey = [load_image(f"stgnum{n}.png") for n in range(7)]
 keyimgs = [load_image(f"stkeys{n}.png") for n in range(6)]
 
 # formatting
@@ -109,6 +119,7 @@ def main():
         eth_if_stats = next((stats for interface, stats in net_if_info.items() if interface.startswith("e") and stats.isup), None)
         wireless_if_name = next((interface for interface, stats in net_if_info.items() if interface.startswith("w") and stats.isup), None)
         focused_workspace = get_focused_workspace()
+        time_now = datetime.now()
 
         # rebuild image list
         images = [
@@ -175,7 +186,7 @@ def main():
        
         # cpu usage percent "armor"
         if cpu_usage_percent == 100:
-             images += [
+            images += [
                 (rednumbers[1], HUNDRED_CPU_X, REDNUM_Y),
                 (rednumbers[0], TENS_CPU_X, REDNUM_Y),
                 (rednumbers[0], ONES_CPU_X, REDNUM_Y),
@@ -204,6 +215,39 @@ def main():
                 images.append((keyimgs[4], KEY_X, YELLOW_KEY_Y))
             if rx_mcs >= 0:
                 images.append((keyimgs[5], KEY_X, RED_KEY_Y))
+
+        # month / 12 "BULL"
+        images += [
+            (smallnums_yellow[floor(time_now.month / 10)], BSRC_TENS_X, BULL_Y),
+            (smallnums_yellow[time_now.month % 10], BSRC_ONES_X, BULL_Y),
+            (smallnums_yellow[1], BSRC_TENTHS_X, BULL_Y),
+            (smallnums_yellow[2], BSRC_HUNDREDTHS_X, BULL_Y),
+        ]
+
+        # day / days in month "SHEL"
+        days_in_month = monthrange(time_now.year, time_now.month)[1]
+        images += [
+            (smallnums_yellow[floor(time_now.day / 10)], BSRC_TENS_X, SHEL_Y),
+            (smallnums_yellow[time_now.day % 10], BSRC_ONES_X, SHEL_Y),
+            (smallnums_yellow[floor(days_in_month / 10)], BSRC_TENTHS_X, SHEL_Y),
+            (smallnums_yellow[days_in_month % 10], BSRC_HUNDREDTHS_X, SHEL_Y),
+        ]
+
+        # hour / 24 "RCKT"
+        images += [
+            (smallnums_yellow[floor(time_now.hour / 10)], BSRC_TENS_X, RCKT_Y),
+            (smallnums_yellow[time_now.hour % 10], BSRC_ONES_X, RCKT_Y),
+            (smallnums_yellow[2], BSRC_TENTHS_X, RCKT_Y),
+            (smallnums_yellow[4], BSRC_HUNDREDTHS_X, RCKT_Y),
+        ]
+
+        # minute / 60 "CELL"
+        images += [
+            (smallnums_yellow[floor(time_now.minute / 10)], BSRC_TENS_X, CELL_Y),
+            (smallnums_yellow[time_now.minute % 10], BSRC_ONES_X, CELL_Y),
+            (smallnums_yellow[6], BSRC_TENTHS_X, CELL_Y),
+            (smallnums_yellow[0], BSRC_HUNDREDTHS_X, CELL_Y),
+        ]
 
         # add images to plot
         ax.scatter(
