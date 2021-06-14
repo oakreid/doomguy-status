@@ -74,6 +74,19 @@ except ImportError:
     def get_mcs(device: str):
         return 666
 
+try:
+    from plumbum.cmd import amixer
+    def get_volume_value():
+        try:
+            volume_data = amixer["sget"]["Master"]()
+            search(r"(\[on\])", volume_data)[1]
+            return int(search(r"\[(\d+)%\]", volume_data)[1])
+        except:
+            return None
+except ImportError:
+    def get_volume_value():
+        return None
+
 def get_armsnum(num: int, focused_workspace: int):
     return smallnums_yellow[num] if num == focused_workspace else smallnums_grey[num]
 
@@ -114,6 +127,7 @@ def main():
      
         # get relevant system info
         battery_data = sensors_battery()
+        volume_value = get_volume_value()
         cpu_usage_percent = int(cpu_percent())
         net_if_info = net_if_stats()
         eth_if_stats = next((stats for interface, stats in net_if_info.items() if interface.startswith("e") and stats.isup), None)
@@ -136,51 +150,42 @@ def main():
 
         if battery_data:
             battery_percent = int(battery_data.percent)
-            battery_minsleft = min(int(battery_data.secsleft / 60), 999)
             images.append((facelist[5 - ceil(battery_percent / 20)][randrange(3)], CENTER_X, CENTER_Y))  # face
 
             # battery percent remaining "HEALTH"
             if battery_percent == 100:
                 images.append((rednumbers[1], HUNDREDS_HEALTH_X, REDNUM_Y))
             if battery_percent >= 10:
-                images.append((rednumbers[floor(battery_percent / 10)], TENS_HEALTH_X, REDNUM_Y))
+                images.append((rednumbers[floor(battery_percent / 10) % 10], TENS_HEALTH_X, REDNUM_Y))
             images.append((rednumbers[battery_percent % 10], ONES_HEALTH_X, REDNUM_Y))
-
-            # time in minutes left on battery charge "AMMO"
-            if battery_minsleft >= 100:
-                images += [
-                    (rednumbers[floor(battery_minsleft / 100)], HUNDREDS_AMMO_X, REDNUM_Y),
-                    (rednumbers[floor(battery_minsleft % 100 / 10)], TENS_AMMO_X, REDNUM_Y),
-                    (rednumbers[battery_minsleft % 10], ONES_AMMO_X, REDNUM_Y),
-                ]
-            elif battery_minsleft >= 10:
-                images += [
-                    (rednumbers[floor(battery_minsleft / 10)], TENS_AMMO_X, REDNUM_Y),
-                    (rednumbers[battery_minsleft % 10], ONES_AMMO_X, REDNUM_Y),
-                ]
-            elif battery_minsleft <= 0:  # usually indicates the device is charging
-                images += [
-                    (redminus, HUNDREDS_AMMO_X, REDNUM_Y),
-                    (redminus, TENS_AMMO_X, REDNUM_Y),
-                    (redminus, ONES_AMMO_X, REDNUM_Y),
-                ]
-            else:
-                images.append((rednumbers[battery_minsleft], ONES_AMMO_X, REDNUM_Y))
         else:  # usually indicates the device was just plugged into or unplugged from a power source
             images += [
                 (faceouch, CENTER_X, CENTER_Y),
                 (redminus, TENS_HEALTH_X, REDNUM_Y),
                 (redminus, ONES_HEALTH_X, REDNUM_Y),
+            ]
+
+        if volume_value is not None:
+            volume_value = min(volume_value, 999)
+
+            # volume value "AMMO"
+            if volume_value >= 100:
+                images.append((rednumbers[floor(volume_value / 100)], HUNDREDS_AMMO_X, REDNUM_Y))
+            if volume_value >= 10:
+                images.append((rednumbers[floor(volume_value / 10) % 10], TENS_AMMO_X, REDNUM_Y))
+            images.append((rednumbers[volume_value % 10], ONES_AMMO_X, REDNUM_Y))
+        else:  # indicates volume is muted or cannot get volume info
+            images += [
                 (redminus, HUNDREDS_AMMO_X, REDNUM_Y),
                 (redminus, TENS_AMMO_X, REDNUM_Y),
                 (redminus, ONES_AMMO_X, REDNUM_Y),
             ]
-       
+
         # cpu usage percent "ARMOR"
         if cpu_usage_percent == 100:
             images.append((rednumbers[1], HUNDREDS_ARMOR_X, REDNUM_Y))
         if cpu_usage_percent >= 10:
-            images.append((rednumbers[floor(cpu_usage_percent / 10)], TENS_ARMOR_X, REDNUM_Y))
+            images.append((rednumbers[floor(cpu_usage_percent / 10) % 10], TENS_ARMOR_X, REDNUM_Y))
         images.append((rednumbers[cpu_usage_percent % 10], ONES_ARMOR_X, REDNUM_Y))
 
         # network connection status "KEYS"
