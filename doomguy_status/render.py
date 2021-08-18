@@ -2,6 +2,7 @@ from calendar import monthrange
 from datetime import datetime
 from math import ceil, floor
 from os import environ
+from pkg_resources import resource_filename
 from random import randrange
 from re import search
 
@@ -48,10 +49,7 @@ BSRC_TENS_X = CENTER_X + 121
 BSRC_ONES_X = CENTER_X + 125
 BSRC_TENTHS_X = CENTER_X + 143
 BSRC_HUNDREDTHS_X = CENTER_X + 147
-try:
-    DOOM_DIR = environ["DOOM_DIR"]
-except KeyError:
-    DOOM_DIR = "."
+
 
 # helper functions
 try:
@@ -92,11 +90,11 @@ def get_armsnum(num: int, focused_workspace: int):
 
 
 def load_image(path: str):
-    return offsetbox.OffsetImage(image.imread(f"{DOOM_DIR}/graphics/{path}"), zoom=ZOOM)
+    return offsetbox.OffsetImage(image.imread(resource_filename("doomguy_status", f"graphics/{path}")), zoom=ZOOM)
 
 
 # load in required graphics
-stbar = image.imread(f"{DOOM_DIR}/graphics/stbar.png")
+stbar = image.imread(resource_filename("doomguy_status", "graphics/stbar.png"))
 facelist = [[load_image(f"stfst{healthrange}{orientation}.png") for orientation in range(3)] for healthrange in range(5)]
 faceouch = load_image("stfouch1.png")
 rednumbers = [load_image(f"winum{n}.png") for n in range(10)]

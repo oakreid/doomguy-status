@@ -1,9 +1,13 @@
 [tool.poetry]
 name = "doomguy-status"
-version = "1.0.0"
+version = "1.1.0"
 description = "DOOM Status Bar"
 authors = ["Oakley Reid <oakreid@gmail.com>"]
 repository = "https://github.com/oakreid/doomguy-status"
+
+[tool.poetry.scripts]
+doom = "doomguy_status.render:main"
+i3_daemon = "doomguy_status.i3_daemon:main"
 
 [tool.poetry.dependencies]
 python = "^3.6"
