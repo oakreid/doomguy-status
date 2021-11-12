@@ -73,12 +73,11 @@ except ImportError:
         return 666
 
 try:
-    from plumbum.cmd import amixer
+    from plumbum.cmd import pactl
     def get_volume_value():
         try:
-            volume_data = amixer["sget"]["Master"]()
-            search(r"(\[on\])", volume_data)[1]
-            return int(search(r"\[(\d+)%\]", volume_data)[1])
+            volume_data = pactl["list"]["sinks"]()
+            return int(search(r"\n\s*Volume\:.*/\s*(\d+)%", volume_data)[1])
         except:
             return None
 except ImportError:
