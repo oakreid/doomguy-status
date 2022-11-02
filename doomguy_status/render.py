@@ -1,7 +1,6 @@
 from calendar import monthrange
 from datetime import datetime
 from math import ceil, floor
-from os import environ
 from pkg_resources import resource_filename
 from random import randrange
 from re import search
@@ -96,6 +95,7 @@ def load_image(path: str):
 stbar = image.imread(resource_filename("doomguy_status", "graphics/stbar.png"))
 facelist = [[load_image(f"stfst{healthrange}{orientation}.png") for orientation in range(3)] for healthrange in range(5)]
 faceouch = load_image("stfouch1.png")
+facegod = load_image("stfgod0.png")
 rednumbers = [load_image(f"winum{n}.png") for n in range(10)]
 redpercent = load_image("wipcnt.png")
 redminus = load_image("sttminus.png")
@@ -121,7 +121,7 @@ def main():
         ax.imshow(stbar)
         ax.axis("off")
         fig.set_size_inches(INCHES_WIDTH, INCHES_HEIGHT)
-     
+
         # get relevant system info
         battery_data = sensors_battery()
         volume_value = get_volume_value()
@@ -147,7 +147,10 @@ def main():
 
         if battery_data:
             battery_percent = int(battery_data.percent)
-            images.append((facelist[5 - ceil(battery_percent / 20)][randrange(3)], CENTER_X, CENTER_Y))  # face
+            if battery_percent == 100 and cpu_usage_percent == 100:
+                images.append((facegod, CENTER_X, CENTER_Y))  # godmode
+            else:
+                images.append((facelist[5 - ceil(battery_percent / 20)][randrange(3)], CENTER_X, CENTER_Y))  # face
 
             # battery percent remaining "HEALTH"
             if battery_percent == 100:
