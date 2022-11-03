@@ -1,9 +1,9 @@
+import re
 from calendar import monthrange
 from datetime import datetime
 from math import ceil, floor
 from pkg_resources import resource_filename
 from random import randrange
-from re import search
 
 from matplotlib import image, offsetbox, pyplot
 from psutil import cpu_percent, net_if_stats, sensors_battery
@@ -64,7 +64,7 @@ try:
     from plumbum.cmd import iw
     def get_mcs(device: str):
         try:
-            return int(search(r"rx.*MCS (\d+) .*", iw[device]["link"]())[1])
+            return int(re.search(r"rx.*MCS (\d+) .*", iw[device]["link"]())[1])
         except:
             return -1
 except ImportError:
@@ -76,7 +76,7 @@ try:
     def get_volume_value():
         try:
             volume_data = pactl["list"]["sinks"]()
-            return int(search(r"\n\s*Volume\:.*/\s*(\d+)%", volume_data)[1])
+            return int([match[1] for match in re.finditer(r"\n\s*Volume\:.*/\s*(\d+)%", volume_data)][-1])
         except:
             return None
 except ImportError:
